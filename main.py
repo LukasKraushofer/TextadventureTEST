@@ -25,7 +25,7 @@ class Node(MyBaseClass, NodeMixin):  # Add Node feature
         if children:
             self.children = children
 
-    def update_stringpos(self): #, list_pos, number):
+    def update_stringpos(self): # add list_pos, number?
 
         new_pos = ""
         for i in self.lpos:
@@ -35,7 +35,7 @@ class Node(MyBaseClass, NodeMixin):  # Add Node feature
 
         self.pos = new_pos
 
-
+# TODO lALL_POS and lpos  -> ALL_POS and pos. See if a string version of pos is needed later on.
 
 
 
@@ -44,11 +44,10 @@ class Tracker:
 
         self.ALL_ID = 0
         self.ALL_POS = "1"
-        #self.CURRENT_POS = "1"
-
         self.lALL_POS = [1]
 
     def update_stringpos(self):  # , list_pos, number):
+        """Turns positions as list [1,1] into position as string 1.1"""
 
         new_pos = ""
         for i in self.lALL_POS:
@@ -59,7 +58,8 @@ class Tracker:
         self.ALL_POS = new_pos
 
 
-def check_hure(node, user_input):
+def check_input(node, user_input):
+    """Checks if user_input already used in a children.text"""
     for i in node.children:
 
         if i.text == user_input:
@@ -69,23 +69,21 @@ def check_hure(node, user_input):
 
     return False, 0
 
+# Unused
 def debug_print(node):
 
     print("DEBUG:")
     for i in node.children:
         print(i.name, " ", i.lpos)
 
-
-
-# TODO active_node in class active_node used in while
-# TODO
-
+# Initialize Tracker and Starting Room
 track = Tracker()
 
 
-
+# TODO make start_room its own parent, so "back" doesnt jump to None
 start_room = Node("1", 0, 0)
 #start_room.parent = start_room
+
 start_room.text = "JO SEAS, WEN HOMMA DENN DO LOL"
 start_room.lpos = [1]
 print(start_room.text)
@@ -96,7 +94,7 @@ active_node = start_room
 user_input = ""
 while user_input != "end":
 
-    print("TOP: ACTIVE NODE: ", active_node.name, active_node.lpos, active_node.text)
+    #print("TOP: ACTIVE NODE: ", active_node.name, active_node.lpos, active_node.text)
 
     user_input = input("lol: ")
     if user_input == "end":
@@ -113,24 +111,25 @@ while user_input != "end":
 
     else:
 
-        found, found_node = check_hure(active_node, user_input)
+        # Check if user_input is already used in children
+        found, found_node = check_input(active_node, user_input)
         if found:
             active_node = found_node
             #print("found jump to: ", active_node.name, active_node.text, active_node.lpos)
 
-
+        # Create new entry
         else:
-            #if(user_input != "back" and user_input != "start"):
-
-            # Check for new .1
+            # If ALL_POS and pos length are same, new ".1" can be added to new entry
             #print("LENGTH: ", len(track.lALL_POS)," ", len(active_node.lpos))
             if len(track.lALL_POS) == len(active_node.lpos):
                 track.lALL_POS.append(1)
 
 
-                # ERROR new_pos.append(1) appends on active_node.lpos too
+                # ERROR: new_pos.append(1) appends on active_node.lpos too
                 #new_pos = active_node.lpos
                 #new_pos.append(1)
+                #???
+
                 new_pos = []
                 for i in active_node.lpos:
                     new_pos.append(i)
@@ -140,35 +139,25 @@ while user_input != "end":
 
             else:
 
-                # TODO IN FUNKTION
-                # TODO Mehr Funktionen? str int wechseln, rechnen und All.Pos handeln
-
-                # pos handler
-
+                #Initialize new entry position, with next branch (1.1."1" <- will be used)
                 new_pos = []
                 for i in active_node.lpos:
                     new_pos.append(i)
                 new_pos.append(1)
 
+                #print(new_pos, new_pos[-1])
+                #print(track.lALL_POS, track.lALL_POS[len(active_node.lpos) - 1])
 
-                #calc_pos = active_node.lpos
-
-                print(new_pos, new_pos[-1])
-                print(track.lALL_POS, track.lALL_POS[len(active_node.lpos) - 1])
-                #active_node[-1] = track.lALL_POS[len(active_node.lpos)-1]+1
+                # TODO Fix Issue using biggest number every time (1.2.8 instead of 1.2.1)
                 new_pos[-1] = track.lALL_POS[len(new_pos) - 1] + 1
-                print(new_pos)
-                print(track.lALL_POS, track.lALL_POS[len(active_node.lpos) - 1])
+
+                #print(new_pos)
+                #print(track.lALL_POS, track.lALL_POS[len(active_node.lpos) - 1])
 
                 name_numb = new_pos[-1]
 
-
-
-
-                #ret_numb = int(calc_pos[-1]) + 1 # Zahl für Node.name
-
                 # Wenn größere Zahlen gefunden werden wird ALL.Pos überschrieben, damit größte bleibt.
-
+                # ALL_POS is the biggest possible position. Loop through new_pos and check for new number update
                 ka = 0
                 for a,b in zip(new_pos, track.lALL_POS):
                     if a > b:
@@ -179,18 +168,22 @@ while user_input != "end":
 
 
 
-                #active_node.update_stringpos()
+                # TODO see if string position will be needed
+                # Turn new list position into string position
                 track.update_stringpos()
 
 
-            #print(new_pos)
 
-            #new_entry = Node(str(ret_numb), 0,0, parent=active_node)
+
+            #Create new Entry and set it as active.
             new_entry = Node(name_numb, 0, 0, parent=active_node)
             #print("NEW ENTRYS: ", new_entry.name, new_entry.lpos)
+
             new_entry.lpos = new_pos
+
             #print(new_entry.lpos)
             #new_entry.update_stringpos()
+
             new_entry.text = user_input
 
             new_pos=[]
